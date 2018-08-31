@@ -1,7 +1,7 @@
 class newppm:
-	def __init__(self, filename, height, width, maxn=255, valspace=1, pixelspace=2, lineEndLength=2):
+	def __init__(self, filename, height, width, maxn=255, valspace=1, pixelspace=2, lineEndLength=2, formatPedantically=False):
 		self.lineEndLength = lineEndLength
-
+		self.formatPedantically = formatPedantically
 		#the minimum whitespace between values
 		self.valspace = 1
 		#extra whitespace between pixels
@@ -27,8 +27,8 @@ class newppm:
 		self.file.write(self.magic + self.note + self.dim + self.maxcol)
 
 		#offset to beginning of pixels.
-		self.blength = len(self.magic + self.note + self.dim + self.maxcol) + 4*(1-self.lineEndLength)
-
+		self.blength = len(self.magic + self.note + self.dim + self.maxcol) + 4*(self.lineEndLength-1)
+		print(self.blength,len(self.magic + self.note + self.dim + self.maxcol),4*(self.lineEndLength-1))
 		self.empty()
 	def toPixel(self, row, col):
 		#moves the file editing/reading index to the pixel at (row, col)
@@ -72,12 +72,18 @@ class newppm:
 
 					self.file.write(" "*(self.numform - len(dig)) + dig)
 				self.file.write(" "*self.pixelspace)
+				if self.formatPedantically:
+				    #Print a newline after every triple to avoid going over the 70 character limit
+				    #Most definitely overkill - but bettter then underkill
+				    #The file is still readable however, as there will be a double newline after the end of a row
+                                    self.file.write('\n')
 			self.file.write('\n')
 	def close(self):
 		self.file.close()
 class openppm:
-	def __init__(self, filename, valspace=1, pixelspace=2, lineEndLength=2):
+	def __init__(self, filename, valspace=1, pixelspace=2, lineEndLength=2, formatPedantically=False):
 		self.lineEndLength = lineEndLength
+		self.formatPedantically = formatPedantically
 
 		#the minimum space between individual pixel values
 		self.valspace = valspace
@@ -154,6 +160,11 @@ class openppm:
 
 					self.file.write(" "*(self.numform - len(dig)) + dig)
 				self.file.write(" "*self.pixelspace)
+				if self.formatPedantically:
+				    #Print a newline after every triple to avoid going over the 70 character limit
+				    #Most definitely overkill - but bettter then underkill
+				    #The file is still readable however, as there will be a double newline after the end of a row
+				    self.file.write('\n')
 			self.file.write('\n')
 		self.file.write('END')
 	def input(self, arr):
